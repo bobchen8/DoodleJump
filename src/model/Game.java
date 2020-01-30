@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -32,6 +33,7 @@ public class Game {
     private Doodle doodle;
     private Pane pane;
     private Monster monster;
+    private Timeline timeline;
     private ArrayList<Platform> platforms;
     private int minY;
     private int maxY;
@@ -45,6 +47,7 @@ public class Game {
         monster = new Monster(pane, 300, -3000);
         this.pane.addEventHandler(KeyEvent.KEY_PRESSED, new KeyHandler());
         this.pane.setFocusTraversable(true);
+        score = 0;
 
         // Generates platforms to start the game
         initiatePlatforms();
@@ -55,7 +58,7 @@ public class Game {
 
     private void setUpTimeline(){
         KeyFrame kf = new KeyFrame(Duration.millis(5), new GravityHandler());
-        Timeline timeline = new Timeline(kf);
+        timeline = new Timeline(kf);
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
@@ -69,6 +72,7 @@ public class Game {
     private class GravityHandler implements EventHandler<ActionEvent> {
         public void handle(ActionEvent event){
             updateDoodle();
+            updateMonster();
 
             // Moves platforms down and holds doodle still if doodle flies past the midpoint of the screen
             // Deletes platforms which fall outside the screen
@@ -78,6 +82,7 @@ public class Game {
                 doodle.setYLocation(MIDPOINT);
                 ArrayList<Platform> newList = new ArrayList<>(platforms);
                 monster.setMonsterY(monster.getYLocation() - aboveMidpoint);
+                checkGameOver();
                 for (Platform p : newList) {
                     p.setPlatformY(p.getPlatformY() - aboveMidpoint);
                     if (p.getPlatformY() > 1100) {
@@ -103,9 +108,7 @@ public class Game {
             }
 
             // If doodle falls 1000 pixels below the lowest platform, the game ends
-            if (doodle.getYLocation() - 1000 > platforms.get(0).getPlatformY()) {
-                System.out.println("Game Over!");
-            }
+            checkGameOver();
         }
     }
 
@@ -160,15 +163,40 @@ public class Game {
         doodle.setYLocation(updatedPosition);
     }
 
+    private void updateMonster() {
+        if (monster.getYLocation() > 1100) {
+            int randomYVal = minY + (int) ((maxY - minY + 1) * Math.random());
+            int randomXVal = MIN_X + (int) ((MAX_X - MIN_X + 1) * Math.random());
+            monster.setYLocation(randomYVal);
+            monster.setXLocation(randomXVal);
+        }
+    }
+
     private void initiatePlatforms() {
         minY = 900;
         maxY = 1000;
-        score = 0;
+        platforms.add(new Platform(pane, 370, 430));
         while (minY > -3000) {
             generatePlatform(minY, maxY);
             maxY = platforms.get(platforms.size() - 1 ).getPlatformY();
             minY = maxY - 150;
         }
+    }
+
+    private void checkGameOver() {
+        if (doodle.getYLocation() - 1000 > platforms.get(0).getPlatformY() || intersectMonster()) {
+            timeline.stop();
+            Button button = new Button("Try Again!");
+            button.setLayoutX(325);
+            button.setLayoutY(500);
+            pane.getChildren().add(button);
+            pane.setOnKeyPressed(null);
+            button.setOnAction(event -> Main.startGame());
+        }
+    }
+
+    private boolean intersectMonster() {
+        return monster.monsterIntersects(doodle.getXLocation(), doodle.getYLocation());
     }
 
 

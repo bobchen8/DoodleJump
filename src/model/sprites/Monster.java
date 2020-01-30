@@ -60,4 +60,12 @@ public class Monster {
     public void setMonsterY (double y) {
         setYLocation(y);
     }
+
+    public void setMonsterX (double x) {
+        setYLocation(x);
+    }
+
+    public boolean monsterIntersects(double x, double y) {
+        return monsterFace.intersects(x, y, FACE_RADIUS, FACE_RADIUS);
+    }
 }

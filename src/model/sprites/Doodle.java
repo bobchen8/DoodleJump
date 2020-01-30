@@ -73,4 +73,6 @@ public class Doodle {
     public double getXLocation(){return doodleFace.getCenterX();}
 
     public double getYLocation(){return doodleFace.getCenterY();}
+
+
 }

@@ -21,6 +21,7 @@ public class PaneOrganizer {
         this.pane = new Pane();
         pane.setPrefSize(700, 950);
         borderPane.setCenter(pane);
+        borderPane.setStyle("-fx-background-color: grey;");
         new Game(pane);
 
         setUpTop();
